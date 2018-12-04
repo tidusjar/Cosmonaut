@@ -7,11 +7,11 @@ namespace Cosmonaut.Response
     {
         public bool IsSuccess => !FailedEntities.Any();
 
-        public List<CosmosResponse<TEntity>> FailedEntities { get; } = new List<CosmosResponse<TEntity>>();
+        public List<CosmonautResponse<TEntity>> FailedEntities { get; } = new List<CosmonautResponse<TEntity>>();
 
-        public List<CosmosResponse<TEntity>> SuccessfulEntities { get; } = new List<CosmosResponse<TEntity>>();
+        public List<CosmonautResponse<TEntity>> SuccessfulEntities { get; } = new List<CosmonautResponse<TEntity>>();
 
-        internal void AddResponse(CosmosResponse<TEntity> response)
+        internal void AddResponse(CosmonautResponse<TEntity> response)
         {
             if (response == null)
                 return;

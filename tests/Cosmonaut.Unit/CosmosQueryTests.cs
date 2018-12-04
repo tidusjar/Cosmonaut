@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Cosmonaut.Extensions;
 using FluentAssertions;
-using Microsoft.Azure.Documents;
 using Moq;
 using Xunit;
 

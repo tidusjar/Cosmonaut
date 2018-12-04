@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.Azure.Documents;
+using Microsoft.Azure.Cosmos;
 
 namespace Cosmonaut.Storage
 {

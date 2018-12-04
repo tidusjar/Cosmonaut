@@ -4,7 +4,7 @@ using System.Reflection;
 using Cosmonaut.Attributes;
 using Cosmonaut.Exceptions;
 using Cosmonaut.Internal;
-using Microsoft.Azure.Documents;
+using Microsoft.Azure.Cosmos;
 using Newtonsoft.Json;
 
 namespace Cosmonaut.Extensions
@@ -42,10 +42,10 @@ namespace Cosmonaut.Extensions
                    || partitionKeyProperty.Name.Equals(CosmosConstants.CosmosId, StringComparison.OrdinalIgnoreCase);
         }
 
-        internal static PartitionKey GetPartitionKeyValueForEntity<TEntity>(this TEntity entity) where TEntity : class
+        internal static object GetPartitionKeyValueForEntity<TEntity>(this TEntity entity) where TEntity : class
         {
             var partitionKeyValue = entity.GetPartitionKeyValueAsStringForEntity();
-            return !string.IsNullOrEmpty(partitionKeyValue) ? new PartitionKey(partitionKeyValue) : null;
+            return !string.IsNullOrEmpty(partitionKeyValue) ? partitionKeyValue : null;
         }
 
         internal static string GetPartitionKeyValueAsStringForEntity<TEntity>(this TEntity entity) where TEntity : class

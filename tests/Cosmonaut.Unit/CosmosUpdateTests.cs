@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 using Cosmonaut.Extensions;
 using Cosmonaut.Testing;
 using FluentAssertions;
-using Microsoft.Azure.Documents;
-using Microsoft.Azure.Documents.Client;
 using Moq;
 using Xunit;
 
@@ -75,8 +73,8 @@ namespace Cosmonaut.Unit
             // Assert
             result.FailedEntities.Should().BeEmpty();
             result.SuccessfulEntities.Should().HaveCount(1);
-            result.SuccessfulEntities.Single().ResourceResponse.Resource.Should().NotBeNull();
-            result.SuccessfulEntities.Single().ResourceResponse.Resource.Should().BeEquivalentTo(document);
+            result.SuccessfulEntities.Single().CosmosResponse.Resource.Should().NotBeNull();
+            result.SuccessfulEntities.Single().CosmosResponse.Resource.Should().BeEquivalentTo(document);
         }
         
         [Fact]
@@ -131,8 +129,8 @@ namespace Cosmonaut.Unit
             // Assert
             result.FailedEntities.Should().BeEmpty();
             result.SuccessfulEntities.Should().HaveCount(1);
-            result.SuccessfulEntities.Single().ResourceResponse.Resource.Should().BeEquivalentTo(document);
-            result.SuccessfulEntities.Single().ResourceResponse.Resource.Should().NotBeNull();
+            result.SuccessfulEntities.Single().CosmosResponse.Resource.Should().BeEquivalentTo(document);
+            result.SuccessfulEntities.Single().CosmosResponse.Resource.Should().NotBeNull();
         }
     }
 }

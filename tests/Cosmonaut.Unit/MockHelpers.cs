@@ -7,8 +7,6 @@ using System.Security;
 using System.Threading;
 using Cosmonaut.Extensions;
 using Cosmonaut.Testing;
-using Microsoft.Azure.Documents;
-using Microsoft.Azure.Documents.Client;
 using Moq;
 
 namespace Cosmonaut.Unit

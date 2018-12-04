@@ -1,7 +1,5 @@
 ﻿using System;
 using FluentAssertions;
-using Microsoft.Azure.Documents;
-using Microsoft.Azure.Documents.Client;
 using Xunit;
 
 namespace Cosmonaut.Unit

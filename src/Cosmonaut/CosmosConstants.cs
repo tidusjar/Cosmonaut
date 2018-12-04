@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.Documents;
+﻿using Microsoft.Azure.Cosmos;
 
 namespace Cosmonaut
 {

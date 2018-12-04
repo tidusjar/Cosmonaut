@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using Cosmonaut.Internal;
-using Microsoft.Azure.Documents.Client;
+using Microsoft.Azure.Cosmos;
 
 namespace Cosmonaut.Extensions
 {
@@ -16,7 +16,7 @@ namespace Cosmonaut.Extensions
         /// Read more at https://github.com/Elfocrash/Cosmonaut
         /// </summary>
         /// <returns>A specific page of the results that your query matches.</returns>
-        public static IQueryable<T> WithPagination<T>(this IQueryable<T> queryable, int pageNumber, int pageSize)
+        public static CosmosResultSetIterator<T> WithPagination<T>(this CosmosResultSetIterator<T> queryable, int pageNumber, int pageSize)
         {
             if (pageNumber <= 0)
             {
@@ -58,22 +58,22 @@ namespace Cosmonaut.Extensions
             if (!queryable.GetType().Name.Equals(DocumentQueryTypeName))
                 return queryable;
 
-            var feedOptions = queryable.GetFeedOptionsForQueryable() ?? new FeedOptions();
+            var feedOptions = queryable.GetFeedOptionsForQueryable() ?? new CosmosQueryRequestOptions();
             feedOptions.MaxItemCount = pageSize;
             feedOptions.RequestContinuation = continuationInfo;
             queryable.SetFeedOptionsForQueryable(feedOptions);
             return queryable;
         }
 
-        internal static FeedOptions GetFeedOptionsForQueryable<T>(this IQueryable<T> queryable)
+        internal static CosmosQueryRequestOptions GetFeedOptionsForQueryable<T>(this IQueryable<T> queryable)
         {
             if (!queryable.GetType().Name.Equals(DocumentQueryTypeName))
                 return null;
 
-            return (FeedOptions) InternalTypeCache.Instance.FeedOptionsFieldInfo.GetValue(queryable.Provider);
+            return (CosmosQueryRequestOptions) InternalTypeCache.Instance.FeedOptionsFieldInfo.GetValue(queryable.Provider);
         }
 
-        internal static void SetFeedOptionsForQueryable<T>(this IQueryable<T> queryable, FeedOptions feedOptions)
+        internal static void SetFeedOptionsForQueryable<T>(this IQueryable<T> queryable, CosmosQueryRequestOptions feedOptions)
         {
             if (!queryable.GetType().Name.Equals(DocumentQueryTypeName))
                 return;

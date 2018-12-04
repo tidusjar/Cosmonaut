@@ -3,8 +3,6 @@ using System.Threading.Tasks;
 using Cosmonaut.Storage;
 using Cosmonaut.Testing;
 using FluentAssertions;
-using Microsoft.Azure.Documents;
-using Microsoft.Azure.Documents.Client;
 using Moq;
 using Xunit;
 

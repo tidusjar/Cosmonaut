@@ -2,7 +2,6 @@
 using System.Reflection;
 using Cosmonaut.Extensions;
 using FluentAssertions;
-using Microsoft.Azure.Documents.Client;
 using Newtonsoft.Json;
 using Xunit;
 

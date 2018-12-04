@@ -8,8 +8,6 @@ using Cosmonaut.Response;
 using Cosmonaut.System.Models;
 using FluentAssertions;
 using FluentAssertions.Equivalency;
-using Microsoft.Azure.Documents;
-using Microsoft.Azure.Documents.Client;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -347,8 +345,8 @@ namespace Cosmonaut.System
             // Assert
             updated.IsSuccess.Should().BeTrue();
             updated.Entity.Should().BeEquivalentTo(cat);
-            updated.ResourceResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-            updated.ResourceResponse.Resource.GetPropertyValue<string>("Name").Should().Be("MEGAKITTY");
+            updated.CosmosResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            updated.CosmosResponse.Resource.GetPropertyValue<string>("Name").Should().Be("MEGAKITTY");
             updated.CosmosOperationStatus.Should().Be(CosmosOperationStatus.Success);
         }
 
@@ -384,8 +382,8 @@ namespace Cosmonaut.System
             // Assert
             updated.IsSuccess.Should().BeTrue();
             updated.Entity.Should().BeEquivalentTo(cat);
-            updated.ResourceResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-            updated.ResourceResponse.Resource.GetPropertyValue<string>("Name").Should().Be("MEGAKITTY");
+            updated.CosmosResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            updated.CosmosResponse.Resource.GetPropertyValue<string>("Name").Should().Be("MEGAKITTY");
             updated.CosmosOperationStatus.Should().Be(CosmosOperationStatus.Success);
         }
 
@@ -420,7 +418,7 @@ namespace Cosmonaut.System
             updated.IsSuccess.Should().BeFalse();
             updated.Entity.Should().BeEquivalentTo(cat);
             updated.CosmosOperationStatus.Should().Be(CosmosOperationStatus.ResourceNotFound);
-            updated.ResourceResponse.Should().BeNull();
+            updated.CosmosResponse.Should().BeNull();
         }
 
         [Fact]
@@ -452,8 +450,8 @@ namespace Cosmonaut.System
             // Assert
             updated.IsSuccess.Should().BeTrue();
             updated.Entity.Should().BeEquivalentTo(cat);
-            updated.ResourceResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-            updated.ResourceResponse.Resource.GetPropertyValue<string>("Name").Should().Be("MEGAKITTY");
+            updated.CosmosResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+            updated.CosmosResponse.Resource.GetPropertyValue<string>("Name").Should().Be("MEGAKITTY");
             updated.CosmosOperationStatus.Should().Be(CosmosOperationStatus.Success);
         }
 
@@ -503,7 +501,7 @@ namespace Cosmonaut.System
             var found = await _cosmonautClient.GetDocumentAsync(_databaseId, _collectionName, cat.CatId);
 
             // Assert
-            added.ResourceResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+            added.CosmosResponse.StatusCode.Should().Be(HttpStatusCode.Created);
             added.Entity.Name.Should().Be("Kitty");
             found.Should().NotBeNull();
             found.Id.Should().Be(cat.CatId);
@@ -521,7 +519,7 @@ namespace Cosmonaut.System
             var found = await _cosmonautClient.GetDocumentAsync(_databaseId, _collectionName, cat.CatId);
 
             // Assert
-            added.ResourceResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+            added.CosmosResponse.StatusCode.Should().Be(HttpStatusCode.Created);
             added.Entity.Name.Should().Be("Kitty");
             found.Should().NotBeNull();
             found.Id.Should().Be(cat.CatId);

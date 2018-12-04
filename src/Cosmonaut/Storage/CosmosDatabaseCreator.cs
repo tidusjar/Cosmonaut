@@ -1,32 +1,23 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Azure.Documents;
+﻿using System.Net;
+using System.Threading.Tasks;
+using Microsoft.Azure.Cosmos;
 
 namespace Cosmonaut.Storage
 {
     internal class CosmosDatabaseCreator : IDatabaseCreator
     {
-        private readonly ICosmonautClient _cosmonautClient;
+        private readonly CosmosClient _cosmosClient;
 
-        public CosmosDatabaseCreator(ICosmonautClient cosmonautClient)
+        public CosmosDatabaseCreator(CosmosClient cosmosClient)
         {
-            _cosmonautClient = cosmonautClient;
-        }
-
-        public CosmosDatabaseCreator(IDocumentClient documentClient)
-        {
-            _cosmonautClient = new CosmonautClient(documentClient);
+            _cosmosClient = cosmosClient;
         }
 
         public async Task<bool> EnsureCreatedAsync(string databaseId)
         {
-            var database = await _cosmonautClient.GetDatabaseAsync(databaseId);
+            var response = await _cosmosClient.Databases.CreateDatabaseIfNotExistsAsync(databaseId);
 
-            if (database != null) return false;
-
-            var newDatabase = new Database {Id = databaseId};
-
-            database = await _cosmonautClient.CreateDatabaseAsync(newDatabase);
-            return database != null;
+            return true;//response.StatusCode == HttpStatusCode.OK;
         }
     }
 }

@@ -1,7 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Cosmonaut.Response;
-using Microsoft.Azure.Documents;
-using Microsoft.Azure.Documents.Client;
 
 namespace Cosmonaut.Extensions
 {
@@ -61,12 +59,12 @@ namespace Cosmonaut.Extensions
             }
         }
 
-        internal static async Task<CosmosResponse<TEntity>> ExecuteCosmosCommand<TEntity>(this Task<ResourceResponse<Document>> operationTask, TEntity entity) where TEntity : class
+        internal static async Task<CosmonautResponse<TEntity>> ExecuteCosmosCommand<TEntity>(this Task<ResourceResponse<Document>> operationTask, TEntity entity) where TEntity : class
         {
             try
             {
                 var response = await operationTask;
-                return new CosmosResponse<TEntity>(entity, response);
+                return new CosmonautResponse<TEntity>(entity, response);
             }
             catch (DocumentClientException exception)
             {

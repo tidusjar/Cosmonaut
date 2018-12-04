@@ -7,8 +7,7 @@ using System.Threading.Tasks;
 using Cosmonaut.Diagnostics;
 using Cosmonaut.Internal;
 using Cosmonaut.Response;
-using Microsoft.Azure.Documents.Client;
-using Microsoft.Azure.Documents.Linq;
+using Microsoft.Azure.Cosmos;
 
 namespace Cosmonaut.Extensions
 {
@@ -28,21 +27,21 @@ namespace Cosmonaut.Extensions
             return await GetPagedListFromQueryable(queryable, cancellationToken);
         }
 
-        public static async Task<int> CountAsync<TEntity>(
-            this IQueryable<TEntity> queryable, 
-            CancellationToken cancellationToken = default)
-        {
-            return await queryable.InvokeCosmosCallAsync(() => DocumentQueryable.CountAsync(queryable, cancellationToken), queryable.ToString(), target: GetAltLocationFromQueryable(queryable));
-        }
+        //public static async Task<int> CountAsync<TEntity>(
+        //    this IQueryable<TEntity> queryable, 
+        //    CancellationToken cancellationToken = default)
+        //{
+        //    return await queryable.InvokeCosmosCallAsync(() => DocumentQueryable.CountAsync(queryable, cancellationToken), queryable.ToString(), target: GetAltLocationFromQueryable(queryable));
+        //}
 
-        public static async Task<int> CountAsync<TEntity>(
-            this IQueryable<TEntity> queryable,
-            Expression<Func<TEntity, bool>> predicate,
-            CancellationToken cancellationToken = default)
-        {
-            var finalQueryable = queryable.Where(predicate);
-            return await CountAsync(finalQueryable, cancellationToken);
-        }
+        //public static async Task<int> CountAsync<TEntity>(
+        //    this IQueryable<TEntity> queryable,
+        //    Expression<Func<TEntity, bool>> predicate,
+        //    CancellationToken cancellationToken = default)
+        //{
+        //    var finalQueryable = queryable.Where(predicate);
+        //    return await CountAsync(finalQueryable, cancellationToken);
+        //}
 
         public static async Task<TEntity> FirstOrDefaultAsync<TEntity>(
             this IQueryable<TEntity> queryable, 
@@ -108,19 +107,19 @@ namespace Cosmonaut.Extensions
             return await finalQueryable.SingleAsync(cancellationToken);
         }
 
-        public static async Task<TEntity> MaxAsync<TEntity>(
-            this IQueryable<TEntity> queryable, 
-            CancellationToken cancellationToken = default)
-        {
-            return await queryable.InvokeCosmosCallAsync(() => DocumentQueryable.MaxAsync(queryable, cancellationToken), queryable.ToString(), target: GetAltLocationFromQueryable(queryable));
-        }
+        //public static async Task<TEntity> MaxAsync<TEntity>(
+        //    this IQueryable<TEntity> queryable, 
+        //    CancellationToken cancellationToken = default)
+        //{
+        //    return await queryable.InvokeCosmosCallAsync(() => DocumentQueryable.MaxAsync(queryable, cancellationToken), queryable.ToString(), target: GetAltLocationFromQueryable(queryable));
+        //}
 
-        public static async Task<TEntity> MinAsync<TEntity>(
-            this IQueryable<TEntity> queryable, 
-            CancellationToken cancellationToken = default)
-        {
-            return await queryable.InvokeCosmosCallAsync(() => DocumentQueryable.MinAsync(queryable, cancellationToken), queryable.ToString(), target: GetAltLocationFromQueryable(queryable));
-        }
+        //public static async Task<TEntity> MinAsync<TEntity>(
+        //    this IQueryable<TEntity> queryable, 
+        //    CancellationToken cancellationToken = default)
+        //{
+        //    return await queryable.InvokeCosmosCallAsync(() => DocumentQueryable.MinAsync(queryable, cancellationToken), queryable.ToString(), target: GetAltLocationFromQueryable(queryable));
+        //}
 
         private static async Task<List<T>> GetListFromQueryable<T>(IQueryable<T> queryable,
             CancellationToken cancellationToken)
@@ -232,19 +231,18 @@ namespace Cosmonaut.Extensions
             return new CosmosPagedResults<T>(results, pageSize, nextPageToken, queryable);
         }
 
-        private static async Task<CosmosPagedResults<T>> GetTokenPagedResultsFromQueryToList<T>(IQueryable<T> queryable, int pageSize, CancellationToken cancellationToken)
+        private static async Task<CosmosPagedResults<T>> GetTokenPagedResultsFromQueryToList<T>(CosmosResultSetIterator<T> queryable, int pageSize, CancellationToken cancellationToken)
         {
-            var query = queryable.AsDocumentQuery();
             var results = new List<T>();
             var nextPageToken = string.Empty;
-            while (query.HasMoreResults)
+            while (queryable.HasMoreResults)
             {
                 if (results.Count == pageSize)
                     break;
 
-                var items = await query.InvokeExecuteNextAsync(() => query.ExecuteNextAsync<T>(cancellationToken),
-                    query.ToString(), target: GetAltLocationFromQueryable(queryable));
-                nextPageToken = items.ResponseContinuation;
+                var items = await queryable.InvokeExecuteNextAsync(() => queryable.FetchNextSetAsync(cancellationToken),
+                    queryable.ToString(), target: "target"/*GetAltLocationFromQueryable(queryable)*/);
+                nextPageToken = items.ContinuationToken;
                 
                 foreach (var item in items)
                 {
@@ -275,15 +273,15 @@ namespace Cosmonaut.Extensions
                 cancellationToken);
         }
 
-        private static string GetAltLocationFromQueryable(IQueryable queryable)
-        {
-            if (!CosmosEventSource.EventSource.IsEnabled())
-                return null;
+        //private static string GetAltLocationFromQueryable(IQueryable queryable)
+        //{
+        //    if (!CosmosEventSource.EventSource.IsEnabled())
+        //        return null;
 
-            if (!queryable.GetType().Name.Equals("DocumentQuery`1"))
-                return null;
+        //    if (!queryable.GetType().Name.Equals("DocumentQuery`1"))
+        //        return null;
 
-            return InternalTypeCache.Instance.DocumentFeedOrDbLinkFieldInfo?.GetValue(queryable.Provider)?.ToString();
-        }
+        //    return InternalTypeCache.Instance.DocumentFeedOrDbLinkFieldInfo?.GetValue(queryable.Provider)?.ToString();
+        //}
     }
 }

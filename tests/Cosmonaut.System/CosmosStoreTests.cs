@@ -10,8 +10,6 @@ using Cosmonaut.Response;
 using Cosmonaut.System.Models;
 using FluentAssertions;
 using FluentAssertions.Equivalency;
-using Microsoft.Azure.Documents;
-using Microsoft.Azure.Documents.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
@@ -174,7 +172,7 @@ namespace Cosmonaut.System
             var response = await ExecuteMultipleAddOperationsForType<Cat>(list => cosmosStore.AddRangeAsync(list), 10);
             
             var addedCats = response.SuccessfulEntities
-                .Select(x => JsonConvert.DeserializeObject<Cat>(x.ResourceResponse.Resource.ToString())).ToList();
+                .Select(x => JsonConvert.DeserializeObject<Cat>(x.CosmosResponse.Resource.ToString())).ToList();
                 addedCats.ForEach(x => x.Name = "different Name");
             await cosmosStore.UpdateRangeAsync(addedCats);
 
@@ -318,11 +316,11 @@ namespace Cosmonaut.System
             var birdFound = await birdStore.FindAsync(addedBirds.SuccessfulEntities.Single().Entity.Id, addedBirds.SuccessfulEntities.Single().Entity.Id);
             var alpacaFound = await alpacaStore.FindAsync(addedAlpacas.SuccessfulEntities.Single().Entity.Id);
 
-            catFound.Should().BeEquivalentTo(JsonConvert.DeserializeObject<Cat>(addedCats.SuccessfulEntities.Single().ResourceResponse.Resource.ToString()));
-            dogFound.Should().BeEquivalentTo(JsonConvert.DeserializeObject<Dog>(addedDogs.SuccessfulEntities.Single().ResourceResponse.Resource.ToString()));
-            lionFound.Should().BeEquivalentTo(JsonConvert.DeserializeObject<Lion>(addedLions.SuccessfulEntities.Single().ResourceResponse.Resource.ToString()));
-            birdFound.Should().BeEquivalentTo(JsonConvert.DeserializeObject<Bird>(addedBirds.SuccessfulEntities.Single().ResourceResponse.Resource.ToString()));
-            alpacaFound.Should().BeEquivalentTo(JsonConvert.DeserializeObject<Alpaca>(addedAlpacas.SuccessfulEntities.Single().ResourceResponse.Resource.ToString()));
+            catFound.Should().BeEquivalentTo(JsonConvert.DeserializeObject<Cat>(addedCats.SuccessfulEntities.Single().CosmosResponse.Resource.ToString()));
+            dogFound.Should().BeEquivalentTo(JsonConvert.DeserializeObject<Dog>(addedDogs.SuccessfulEntities.Single().CosmosResponse.Resource.ToString()));
+            lionFound.Should().BeEquivalentTo(JsonConvert.DeserializeObject<Lion>(addedLions.SuccessfulEntities.Single().CosmosResponse.Resource.ToString()));
+            birdFound.Should().BeEquivalentTo(JsonConvert.DeserializeObject<Bird>(addedBirds.SuccessfulEntities.Single().CosmosResponse.Resource.ToString()));
+            alpacaFound.Should().BeEquivalentTo(JsonConvert.DeserializeObject<Alpaca>(addedAlpacas.SuccessfulEntities.Single().CosmosResponse.Resource.ToString()));
         }
 
         [Fact]
@@ -342,10 +340,10 @@ namespace Cosmonaut.System
             var lionFound = await lionStore.Query().SingleAsync();
             var birdFound = await birdStore.Query(new FeedOptions{MaxItemCount = 100}).SingleOrDefaultAsync();
 
-            catFound.Should().BeEquivalentTo(JsonConvert.DeserializeObject<Cat>(addedCats.SuccessfulEntities.Single().ResourceResponse.Resource.ToString()));
-            dogFound.Should().BeEquivalentTo(JsonConvert.DeserializeObject<Dog>(addedDogs.SuccessfulEntities.Single().ResourceResponse.Resource.ToString()));
-            lionFound.Should().BeEquivalentTo(JsonConvert.DeserializeObject<Lion>(addedLions.SuccessfulEntities.Single().ResourceResponse.Resource.ToString()));
-            birdFound.Should().BeEquivalentTo(JsonConvert.DeserializeObject<Bird>(addedBirds.SuccessfulEntities.Single().ResourceResponse.Resource.ToString()));
+            catFound.Should().BeEquivalentTo(JsonConvert.DeserializeObject<Cat>(addedCats.SuccessfulEntities.Single().CosmosResponse.Resource.ToString()));
+            dogFound.Should().BeEquivalentTo(JsonConvert.DeserializeObject<Dog>(addedDogs.SuccessfulEntities.Single().CosmosResponse.Resource.ToString()));
+            lionFound.Should().BeEquivalentTo(JsonConvert.DeserializeObject<Lion>(addedLions.SuccessfulEntities.Single().CosmosResponse.Resource.ToString()));
+            birdFound.Should().BeEquivalentTo(JsonConvert.DeserializeObject<Bird>(addedBirds.SuccessfulEntities.Single().CosmosResponse.Resource.ToString()));
         }
 
         [Fact]
@@ -572,7 +570,7 @@ namespace Cosmonaut.System
             addedCats.SuccessfulEntities.ForEach(cat =>
             {
                 cat.CosmosOperationStatus.Should().Be(CosmosOperationStatus.Success);
-                cat.ResourceResponse.StatusCode.Should().Be(expectedCode);
+                cat.CosmosResponse.StatusCode.Should().Be(expectedCode);
             });
 
             if (entitiesToAssert != null)

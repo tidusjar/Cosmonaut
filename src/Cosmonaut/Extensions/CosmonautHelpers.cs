@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.Documents;
+﻿using Microsoft.Azure.Cosmos;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -36,11 +36,11 @@ namespace Cosmonaut.Extensions
             };
         }
         
-        internal static void RemoveDuplicateIds(ref Document actualDocument)
+        internal static void RemoveDuplicateIds<TEntity>(ref TEntity actualDocument)
         {
-            actualDocument.SetPropertyValue("Id", null);
-            actualDocument.SetPropertyValue("ID", null);
-            actualDocument.SetPropertyValue("iD", null);
+            //actualDocument.SetPropertyValue("Id", null);
+            //actualDocument.SetPropertyValue("ID", null);
+            //actualDocument.SetPropertyValue("iD", null);
         }
     }
 }

@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Microsoft.Azure.Documents;
-using Microsoft.Azure.Documents.Client;
+using Microsoft.Azure.Cosmos;
 
 namespace Cosmonaut.Diagnostics
 {
@@ -21,42 +20,42 @@ namespace Cosmonaut.Diagnostics
             return CreateCosmosEventCall(invoker, data, properties, target, name).InvokeAsync(eventCall);
         }
 
-        internal static Task<ResourceResponse<TResource>> InvokeCosmosOperationAsync<TResource>(
-            this object invoker,
-            Func<Task<ResourceResponse<TResource>>> eventCall,
-            string data,
-            Dictionary<string, object> properties = null,
-            string target = null,
-            [CallerMemberName]string name = null) where TResource : Resource, new()
-        {
-            return CreateCosmosEventCall(invoker, data, properties, target, name).InvokeAsync(eventCall);
-        }
+        //internal static Task<ResourceResponse<TResource>> InvokeCosmosOperationAsync<TResource>(
+        //    this object invoker,
+        //    Func<Task<ResourceResponse<TResource>>> eventCall,
+        //    string data,
+        //    Dictionary<string, object> properties = null,
+        //    string target = null,
+        //    [CallerMemberName]string name = null) where TResource : Resource, new()
+        //{
+        //    return CreateCosmosEventCall(invoker, data, properties, target, name).InvokeAsync(eventCall);
+        //}
 
-        internal static Task<DocumentResponse<TResource>> InvokeCosmosOperationAsync<TResource>(
-            this object invoker,
-            Func<Task<DocumentResponse<TResource>>> eventCall,
-            string data,
-            Dictionary<string, object> properties = null,
-            string target = null,
-            [CallerMemberName]string name = null)
-        {
-            return CreateCosmosEventCall(invoker, data, properties, target, name).InvokeAsync(eventCall);
-        }
+        //internal static Task<DocumentResponse<TResource>> InvokeCosmosOperationAsync<TResource>(
+        //    this object invoker,
+        //    Func<Task<DocumentResponse<TResource>>> eventCall,
+        //    string data,
+        //    Dictionary<string, object> properties = null,
+        //    string target = null,
+        //    [CallerMemberName]string name = null)
+        //{
+        //    return CreateCosmosEventCall(invoker, data, properties, target, name).InvokeAsync(eventCall);
+        //}
 
-        internal static Task<StoredProcedureResponse<TResource>> InvokeCosmosOperationAsync<TResource>(
-            this object invoker,
-            Func<Task<StoredProcedureResponse<TResource>>> eventCall,
-            string data,
-            Dictionary<string, object> properties = null,
-            string target = null,
-            [CallerMemberName]string name = null)
-        {
-            return CreateCosmosEventCall(invoker, data, properties, target, name).InvokeAsync(eventCall);
-        }
+        //internal static Task<StoredProcedureResponse<TResource>> InvokeCosmosOperationAsync<TResource>(
+        //    this object invoker,
+        //    Func<Task<StoredProcedureResponse<TResource>>> eventCall,
+        //    string data,
+        //    Dictionary<string, object> properties = null,
+        //    string target = null,
+        //    [CallerMemberName]string name = null)
+        //{
+        //    return CreateCosmosEventCall(invoker, data, properties, target, name).InvokeAsync(eventCall);
+        //}
 
-        internal static Task<FeedResponse<TEntity>> InvokeExecuteNextAsync<TEntity>(
+        internal static Task<CosmosQueryResponse<TEntity>> InvokeExecuteNextAsync<TEntity>(
             this object invoker,
-            Func<Task<FeedResponse<TEntity>>> eventCall,
+            Func<Task<CosmosQueryResponse<TEntity>>> eventCall,
             string data,
             Dictionary<string, object> properties = null,
             string target = null,

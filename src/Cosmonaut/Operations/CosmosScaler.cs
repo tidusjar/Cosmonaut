@@ -5,7 +5,6 @@ using System.Net;
 using System.Threading.Tasks;
 using Cosmonaut.Extensions;
 using Cosmonaut.Response;
-using Microsoft.Azure.Documents;
 
 namespace Cosmonaut.Operations
 {
@@ -45,10 +44,10 @@ namespace Cosmonaut.Operations
             await ChangeCollectionThroughput(databaseId, collectionId, throughput);
         }
 
-        internal async Task<CosmosResponse<TEntity>> HandleUpscalingForRangeOperation(
+        internal async Task<CosmonautResponse<TEntity>> HandleUpscalingForRangeOperation(
             List<TEntity> entitiesList,
             string databaseId, string collectionId, 
-            Func<TEntity, Task<CosmosResponse<TEntity>>> operationAsync)
+            Func<TEntity, Task<CosmonautResponse<TEntity>>> operationAsync)
         {
             var sampleEntity = entitiesList.First();
             var sampleResponse = await operationAsync(sampleEntity);
@@ -57,14 +56,14 @@ namespace Cosmonaut.Operations
                 return sampleResponse;
 
             entitiesList.Remove(sampleEntity);
-            var requestCharge = sampleResponse.ResourceResponse.RequestCharge;
+            var requestCharge = sampleResponse.CosmosResponse.RequestCharge;
             await UpscaleCollectionRequestUnitsForRequest(databaseId, collectionId, entitiesList.Count, requestCharge);
             return sampleResponse;
         }
         
         internal async Task<CosmosMultipleResponse<TEntity>> UpscaleCollectionIfConfiguredAsSuch(List<TEntity> entitiesList,
             string databaseId, string collectionId,
-            Func<TEntity, Task<CosmosResponse<TEntity>>> operationAsync)
+            Func<TEntity, Task<CosmonautResponse<TEntity>>> operationAsync)
         {
             var multipleResponse = new CosmosMultipleResponse<TEntity>();
 

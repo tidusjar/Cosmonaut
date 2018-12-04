@@ -1,6 +1,4 @@
-﻿using Microsoft.Azure.Documents;
-
-namespace Cosmonaut.Extensions
+﻿namespace Cosmonaut.Extensions
 {
     public static class DocumentClientExtensions
     {

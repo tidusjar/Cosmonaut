@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.Azure.Documents;
 
 namespace Cosmonaut.Exceptions
 {

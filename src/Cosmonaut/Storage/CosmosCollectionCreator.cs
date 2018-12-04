@@ -1,23 +1,18 @@
 ﻿using System;
+using System.Net;
 using System.Threading.Tasks;
 using Cosmonaut.Extensions;
-using Microsoft.Azure.Documents;
-using Microsoft.Azure.Documents.Client;
+using Microsoft.Azure.Cosmos;
 
 namespace Cosmonaut.Storage
 {
     internal class CosmosCollectionCreator : ICollectionCreator
     {
-        private readonly ICosmonautClient _cosmonautClient;
-
-        public CosmosCollectionCreator(ICosmonautClient cosmonautClient)
+        private readonly CosmosClient _cosmosClient;
+        
+        public CosmosCollectionCreator(CosmosClient cosmosClient)
         {
-            _cosmonautClient = cosmonautClient;
-        }
-
-        public CosmosCollectionCreator(IDocumentClient documentClient)
-        {
-            _cosmonautClient = new CosmonautClient(documentClient);
+            _cosmosClient = cosmosClient;
         }
 
         public async Task<bool> EnsureCreatedAsync<TEntity>(
@@ -26,33 +21,15 @@ namespace Cosmonaut.Storage
             int collectionThroughput,
             IndexingPolicy indexingPolicy = null) where TEntity : class
         {
-            var collectionResource = await _cosmonautClient.GetCollectionAsync(databaseId, collectionId);
+            var response = await _cosmosClient.Databases[databaseId].Containers
+                .CreateContainerIfNotExistsAsync(new CosmosContainerSettings
+                {
+                    Id = collectionId,
+                    IndexingPolicy = indexingPolicy ?? CosmosConstants.DefaultIndexingPolicy,
+                    PartitionKey = typeof(TEntity).GetPartitionKeyDefinitionForEntity()
+                }, collectionThroughput);
 
-            if (collectionResource != null)
-                return true;
-
-            var newCollection = new DocumentCollection
-            {
-                Id = collectionId,
-                IndexingPolicy = indexingPolicy ?? CosmosConstants.DefaultIndexingPolicy
-            };
-
-            SetPartitionKeyDefinitionForCollection(typeof(TEntity), newCollection);
-
-            newCollection = await _cosmonautClient.CreateCollectionAsync(databaseId, newCollection, new RequestOptions
-            {
-                OfferThroughput = collectionThroughput
-            });
-
-            return newCollection != null;
-        }
-
-        private static void SetPartitionKeyDefinitionForCollection(Type entityType, DocumentCollection collection)
-        {
-            var partitionKey = entityType.GetPartitionKeyDefinitionForEntity();
-
-            if (partitionKey != null)
-                collection.PartitionKey = partitionKey;
+            return true;//response.StatusCode == HttpStatusCode.OK
         }
     }
 }

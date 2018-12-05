@@ -33,19 +33,19 @@ namespace Cosmonaut.Response
 
         public bool HasNextPage => !string.IsNullOrEmpty(NextPageToken);
 
-        public async Task<CosmosPagedResults<T>> GetNextPageAsync()
-        {
-            if(Queryable == null)
-                return new CosmosPagedResults<T>(new List<T>(), PageSize, string.Empty);
+        //public async Task<CosmosPagedResults<T>> GetNextPageAsync()
+        //{
+        //    if(Queryable == null)
+        //        return new CosmosPagedResults<T>(new List<T>(), PageSize, string.Empty);
 
-            if(!HasNextPage)
-                return new CosmosPagedResults<T>(new List<T>(), PageSize, string.Empty);
+        //    if(!HasNextPage)
+        //        return new CosmosPagedResults<T>(new List<T>(), PageSize, string.Empty);
 
-            if(PageSize <= 0)
-                return new CosmosPagedResults<T>(new List<T>(), PageSize, string.Empty);
+        //    if(PageSize <= 0)
+        //        return new CosmosPagedResults<T>(new List<T>(), PageSize, string.Empty);
 
-            return await Queryable.WithPagination(NextPageToken, PageSize).ToPagedListAsync();
-        }
+        //    return await Queryable.WithPagination(NextPageToken, PageSize).ToPagedListAsync();
+        //}
         
         public static implicit operator List<T>(CosmosPagedResults<T> results)
         {

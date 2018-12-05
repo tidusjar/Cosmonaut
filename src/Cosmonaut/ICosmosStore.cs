@@ -27,7 +27,7 @@ namespace Cosmonaut
         /// <param name="parameters">The sql parameters to replace if any</param>
         /// <param name="feedOptions">The feed options for this operation.</param>
         /// <param name="cancellationToken">The CancellationToken for this operation.</param>
-        IQueryable<TEntity> Query(string sql, object parameters = null, FeedOptions feedOptions = null, CancellationToken cancellationToken = default);
+        IQueryable<TEntity> Query(string sql, object parameters = null, CosmosQueryRequestOptions feedOptions = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         ///     Returns a single item that matches the expression provided.
@@ -36,7 +36,7 @@ namespace Cosmonaut
         /// <param name="parameters">The sql parameters to replace if any</param>
         /// <param name="feedOptions">The feed options for this operation.</param>
         /// <param name="cancellationToken">The CancellationToken for this operation.</param>
-        Task<TEntity> QuerySingleAsync(string sql, object parameters = null, FeedOptions feedOptions = null, CancellationToken cancellationToken = default);
+        Task<TEntity> QuerySingleAsync(string sql, object parameters = null, CosmosQueryRequestOptions feedOptions = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         ///     Returns a single item of any type that matches the expression provided.
@@ -45,7 +45,7 @@ namespace Cosmonaut
         /// <param name="parameters">The sql parameters to replace if any</param>
         /// <param name="feedOptions">The feed options for this operation.</param>
         /// <param name="cancellationToken">The CancellationToken for this operation.</param>
-        Task<T> QuerySingleAsync<T>(string sql, object parameters = null, FeedOptions feedOptions = null, CancellationToken cancellationToken = default);
+        Task<T> QuerySingleAsync<T>(string sql, object parameters = null, CosmosQueryRequestOptions feedOptions = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         ///     Returns a collection of items that match the expression provided.
@@ -54,7 +54,7 @@ namespace Cosmonaut
         /// <param name="parameters">The sql parameters to replace if any</param>
         /// <param name="feedOptions">The feed options for this operation.</param>
         /// <param name="cancellationToken">The CancellationToken for this operation.</param>
-        Task<IEnumerable<TEntity>> QueryMultipleAsync(string sql, object parameters = null, FeedOptions feedOptions = null, CancellationToken cancellationToken = default);
+        Task<IEnumerable<TEntity>> QueryMultipleAsync(string sql, object parameters = null, CosmosQueryRequestOptions feedOptions = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         ///     Returns a collection of items of any type that match the expression provided.
@@ -63,7 +63,7 @@ namespace Cosmonaut
         /// <param name="parameters">The sql parameters to replace if any</param>
         /// <param name="feedOptions">The feed options for this operation.</param>
         /// <param name="cancellationToken">The CancellationToken for this operation.</param>
-        Task<IEnumerable<T>> QueryMultipleAsync<T>(string sql, object parameters = null, FeedOptions feedOptions = null, CancellationToken cancellationToken = default);
+        Task<IEnumerable<T>> QueryMultipleAsync<T>(string sql, object parameters = null, CosmosQueryRequestOptions feedOptions = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         ///     Adds the given entity in the cosmos db store.
@@ -215,7 +215,7 @@ namespace Cosmonaut
         ///     various response information such as whether it was successful or what (if anything) went wrong
         ///     at the individual entity level.
         /// </returns>
-        Task<CosmosMultipleResponse<TEntity>> RemoveAsync(Expression<Func<TEntity, bool>> predicate, FeedOptions feedOptions = null, Func<TEntity, CosmosItemRequestOptions> CosmosItemRequestOptions = null, CancellationToken cancellationToken = default);
+        Task<CosmosMultipleResponse<TEntity>> RemoveAsync(Expression<Func<TEntity, bool>> predicate, CosmosQueryRequestOptions feedOptions = null, Func<TEntity, CosmosItemRequestOptions> CosmosItemRequestOptions = null, CancellationToken cancellationToken = default);
         
         /// <summary>
         ///     Removes the given entity from the cosmos db store.

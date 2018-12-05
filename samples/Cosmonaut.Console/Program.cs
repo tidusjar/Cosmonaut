@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Cosmonaut.Extensions;
 using Cosmonaut.Extensions.Microsoft.DependencyInjection;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Cosmonaut.Console

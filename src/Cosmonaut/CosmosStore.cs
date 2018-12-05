@@ -5,14 +5,13 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Cosmonaut.Extensions;
-using Cosmonaut.Operations;
 using Cosmonaut.Response;
 using Cosmonaut.Storage;
 using Microsoft.Azure.Cosmos;
 
 namespace Cosmonaut
 {
-    public sealed class CosmosStore<TEntity> : ICosmosStore<TEntity> where TEntity : class
+    public sealed class CosmosStore<TEntity> /*: ICosmosStore<TEntity>*/ where TEntity : class
     {
         public int CollectionThrouput { get; internal set; } = CosmosConstants.MinimumCosmosThroughput;
 
@@ -34,7 +33,6 @@ namespace Cosmonaut
         
         private readonly IDatabaseCreator _databaseCreator;
         private readonly ICollectionCreator _collectionCreator;
-        private readonly CosmosScaler<TEntity> _cosmosScaler;
 
         public CosmosStore(CosmosStoreSettings settings) : this(settings, string.Empty)
         {
@@ -48,7 +46,6 @@ namespace Cosmonaut
             if (string.IsNullOrEmpty(Settings.DatabaseName)) throw new ArgumentNullException(nameof(Settings.DatabaseName));
             _collectionCreator = new CosmosCollectionCreator(CosmosClient);
             _databaseCreator = new CosmosDatabaseCreator(CosmosClient);
-            _cosmosScaler = new CosmosScaler<TEntity>(this);
             InitialiseCosmosStore(overriddenCollectionName);
             CosmosDatabase = CosmosClient.Databases[DatabaseName].ReadAsync().GetAwaiter().GetResult();
             CosmosContainer = CosmosDatabase.Containers[CollectionName].ReadAsync().GetAwaiter().GetResult();
@@ -110,29 +107,33 @@ namespace Cosmonaut
         public async Task<TEntity> QuerySingleAsync(string sql, object parameters = null, CosmosQueryRequestOptions requestOptions = null, CancellationToken cancellationToken = default)
         {
             var collectionSharingFriendlySql = sql.EnsureQueryIsCollectionSharingFriendly<TEntity>();
-            CosmosResultSetIterator<TEntity> queryable = CosmosContainer.Items.CreateItemQuery<TEntity>(new CosmosSqlQueryDefinition(collectionSharingFriendlySql), null, requestOptions: requestOptions);
-
+            CosmosResultSetIterator<TEntity> queryable = CosmosContainer.Items.CreateItemQuery<TEntity>(new CosmosSqlQueryDefinition(collectionSharingFriendlySql).AddQueryParametersFromObject(parameters), null, requestOptions: requestOptions);
+            //TODO Change this
+            return (await queryable.ToListAsync(cancellationToken)).Single();
         }
 
-        public async Task<T> QuerySingleAsync<T>(string sql, object parameters = null, CosmosItemRequestOptions requestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<T> QuerySingleAsync<T>(string sql, object parameters = null, CosmosQueryRequestOptions requestOptions = null, CancellationToken cancellationToken = default)
         {
             var collectionSharingFriendlySql = sql.EnsureQueryIsCollectionSharingFriendly<TEntity>();
-            var queryable = CosmonautClient.Query<T>(DatabaseName, CollectionName, collectionSharingFriendlySql, parameters, GetFeedOptionsForQuery(feedOptions));
-            return await queryable.SingleOrDefaultAsync(cancellationToken);
+            CosmosResultSetIterator<T> queryable = CosmosContainer.Items.CreateItemQuery<T>(new CosmosSqlQueryDefinition(collectionSharingFriendlySql).AddQueryParametersFromObject(parameters), null, requestOptions: requestOptions);
+            //TODO Change this
+            return (await queryable.ToListAsync(cancellationToken)).SingleOrDefault();
         }
         
-        public async Task<IEnumerable<TEntity>> QueryMultipleAsync(string sql, object parameters = null, FeedOptions feedOptions = null, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<TEntity>> QueryMultipleAsync(string sql, object parameters = null, CosmosQueryRequestOptions feedOptions = null, CancellationToken cancellationToken = default)
         {
             var collectionSharingFriendlySql = sql.EnsureQueryIsCollectionSharingFriendly<TEntity>();
-            var queryable = CosmonautClient.Query<TEntity>(DatabaseName, CollectionName, collectionSharingFriendlySql, parameters, GetFeedOptionsForQuery(feedOptions));
-            return await queryable.ToListAsync(cancellationToken);
+            CosmosResultSetIterator<TEntity> queryable = CosmosContainer.Items.CreateItemQuery<TEntity>(new CosmosSqlQueryDefinition(collectionSharingFriendlySql).AddQueryParametersFromObject(parameters), null, requestOptions: feedOptions);
+            //TODO Change this
+            return (await queryable.ToListAsync(cancellationToken));
         }
 
-        public async Task<IEnumerable<T>> QueryMultipleAsync<T>(string sql, object parameters = null, FeedOptions feedOptions = null, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<T>> QueryMultipleAsync<T>(string sql, object parameters = null, CosmosQueryRequestOptions feedOptions = null, CancellationToken cancellationToken = default)
         {
             var collectionSharingFriendlySql = sql.EnsureQueryIsCollectionSharingFriendly<TEntity>();
-            var queryable = CosmonautClient.Query<T>(DatabaseName, CollectionName, collectionSharingFriendlySql, parameters, GetFeedOptionsForQuery(feedOptions));
-            return await queryable.ToListAsync(cancellationToken);
+            CosmosResultSetIterator<T> queryable = CosmosContainer.Items.CreateItemQuery<T>(new CosmosSqlQueryDefinition(collectionSharingFriendlySql).AddQueryParametersFromObject(parameters), null, requestOptions: feedOptions);
+            //TODO Change this
+            return (await queryable.ToListAsync(cancellationToken));
         }
 
         public async Task<CosmosItemResponse<TEntity>> AddAsync(TEntity entity, object partitionKey = null, CosmosItemRequestOptions cosmosItemRequestOptions = null, CancellationToken cancellationToken = default)
@@ -142,25 +143,25 @@ namespace Cosmonaut
         
         public async Task<CosmosMultipleResponse<TEntity>> AddRangeAsync(IEnumerable<TEntity> entities, Func<TEntity, CosmosItemRequestOptions> CosmosItemRequestOptions = null, CancellationToken cancellationToken = default)
         {
-            return await ExecuteMultiOperationAsync(entities, x => AddAsync(x, CosmosItemRequestOptions?.Invoke(x), cancellationToken));
+            return await ExecuteMultiOperationAsync(entities, x => AddAsync(x, null, CosmosItemRequestOptions?.Invoke(x), cancellationToken));
         }
         
-        public async Task<CosmosMultipleResponse<TEntity>> RemoveAsync(
-            Expression<Func<TEntity, bool>> predicate, 
-            FeedOptions feedOptions = null,
-            Func<TEntity, CosmosItemRequestOptions> CosmosItemRequestOptions = null,
-            CancellationToken cancellationToken = default)
-        {
-            var entitiesToRemove = await Query(GetFeedOptionsForQuery(feedOptions)).Where(predicate).ToListAsync(cancellationToken);
-            return await RemoveRangeAsync(entitiesToRemove, CosmosItemRequestOptions, cancellationToken);
-        }
+        //public async Task<CosmosMultipleResponse<TEntity>> RemoveAsync(
+        //    Expression<Func<TEntity, bool>> predicate, 
+        //    CosmosQueryRequestOptions feedOptions = null,
+        //    Func<TEntity, CosmosItemRequestOptions> CosmosItemRequestOptions = null,
+        //    CancellationToken cancellationToken = default)
+        //{
+        //    var entitiesToRemove = await Query(GetFeedOptionsForQuery(feedOptions)).Where(predicate).ToListAsync(cancellationToken);
+        //    return await RemoveRangeAsync(entitiesToRemove, CosmosItemRequestOptions, cancellationToken);
+        //}
 
-        public async Task<CosmosResponse<TEntity>> RemoveAsync(TEntity entity, CosmosItemRequestOptions CosmosItemRequestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<CosmosItemResponse<TEntity>> RemoveAsync(TEntity entity, CosmosItemRequestOptions CosmosItemRequestOptions = null, CancellationToken cancellationToken = default)
         {
             entity.ValidateEntityForCosmosDb();
             var documentId = entity.GetDocumentId();
-            return await CosmonautClient.DeleteDocumentAsync(DatabaseName, CollectionName, documentId,
-                GetPartitionKeyValue(CosmosItemRequestOptions, entity), cancellationToken).ExecuteCosmosCommand(entity);
+            //GetPartitionKeyValue(entity.GetDocumentId())
+            return await CosmosContainer.Items.DeleteItemAsync<TEntity>(null, documentId, CosmosItemRequestOptions, cancellationToken);
         }
         
         public async Task<CosmosMultipleResponse<TEntity>> RemoveRangeAsync(IEnumerable<TEntity> entities, Func<TEntity, CosmosItemRequestOptions> CosmosItemRequestOptions = null, CancellationToken cancellationToken = default)
@@ -168,12 +169,12 @@ namespace Cosmonaut
             return await ExecuteMultiOperationAsync(entities, x => RemoveAsync(x, CosmosItemRequestOptions?.Invoke(x), cancellationToken));
         }
 
-        public async Task<CosmosResponse<TEntity>> UpdateAsync(TEntity entity, CosmosItemCosmosItemRequestOptions CosmosItemRequestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<CosmosItemResponse<TEntity>> UpdateAsync(TEntity entity, CosmosItemRequestOptions CosmosItemRequestOptions = null, CancellationToken cancellationToken = default)
         {
             entity.ValidateEntityForCosmosDb();
-            var document = entity.ToCosmonautDocument();
-            return await CosmonautClient.UpdateDocumentAsync(DatabaseName, CollectionName, document,
-                GetPartitionKeyValue(CosmosItemRequestOptions, entity), cancellationToken).ExecuteCosmosCommand(entity);
+            //var document = entity.ToCosmonautDocument();
+
+            return await CosmosContainer.Items.UpsertItemAsync(null, entity, CosmosItemRequestOptions, cancellationToken);
         }
         
         public async Task<CosmosMultipleResponse<TEntity>> UpdateRangeAsync(IEnumerable<TEntity> entities, Func<TEntity, CosmosItemRequestOptions> CosmosItemRequestOptions = null, CancellationToken cancellationToken = default)
@@ -181,11 +182,11 @@ namespace Cosmonaut
             return await ExecuteMultiOperationAsync(entities, x => UpdateAsync(x, CosmosItemRequestOptions?.Invoke(x), cancellationToken));
         }
 
-        public async Task<CosmosResponse<TEntity>> UpsertAsync(TEntity entity, CosmosItemRequestOptions CosmosItemRequestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<CosmosItemResponse<TEntity>> UpsertAsync(TEntity entity, CosmosItemRequestOptions CosmosItemRequestOptions = null, CancellationToken cancellationToken = default)
         {
-            var document = entity.ToCosmonautDocument();
-            return await CosmonautClient.UpsertDocumentAsync(DatabaseName, CollectionName, document,
-                GetPartitionKeyValue(CosmosItemRequestOptions, entity), cancellationToken).ExecuteCosmosCommand(entity);
+            //var document = entity.ToCosmonautDocument();
+
+            return await CosmosContainer.Items.UpsertItemAsync(null, entity, CosmosItemRequestOptions, cancellationToken);
         }
 
         public async Task<CosmosMultipleResponse<TEntity>> UpsertRangeAsync(IEnumerable<TEntity> entities, Func<TEntity, CosmosItemRequestOptions> CosmosItemRequestOptions = null, CancellationToken cancellationToken = default)
@@ -193,24 +194,20 @@ namespace Cosmonaut
             return await ExecuteMultiOperationAsync(entities, x => UpsertAsync(x, CosmosItemRequestOptions?.Invoke(x), cancellationToken));
         }
         
-        public async Task<CosmosResponse<TEntity>> RemoveByIdAsync(string id, CosmosItemRequestOptions CosmosItemRequestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<CosmosItemResponse<TEntity>> RemoveByIdAsync(string id, CosmosItemRequestOptions CosmosItemRequestOptions = null, CancellationToken cancellationToken = default)
         {
-            return await CosmosContainer.Items.DeleteItemAsync<TEntity>(, id,
-                GetPartitionKeyValue(id, CosmosItemRequestOptions), cancellationToken);
+            return await CosmosContainer.Items.DeleteItemAsync<TEntity>(null, id, CosmosItemRequestOptions, cancellationToken);
         }
 
-        public async Task<TEntity> FindAsync(string id, CosmosItemRequestOptions CosmosItemRequestOptions = null, CancellationToken cancellationToken = default)
+        public async Task<TEntity> FindAsync(string id, object partitionKeyValue, CosmosItemRequestOptions CosmosItemRequestOptions = null, CancellationToken cancellationToken = default)
         {
-            return await CosmonautClient.GetDocumentAsync<TEntity>(DatabaseName, CollectionName, id,
-                GetPartitionKeyValue(id, CosmosItemRequestOptions), cancellationToken);
+            return await CosmosContainer.Items.ReadItemAsync<TEntity>(partitionKeyValue, id, CosmosItemRequestOptions,
+                cancellationToken);
         }
 
         public async Task<TEntity> FindAsync(string id, object partitionKeyValue, CancellationToken cancellationToken = default)
         {
-            var CosmosItemRequestOptions = partitionKeyValue != null
-                ? new CosmosItemRequestOptions { PartitionKey = new PartitionKey(partitionKeyValue) }
-                : null;
-            return await FindAsync(id, CosmosItemRequestOptions, cancellationToken);
+            return await FindAsync(id, partitionKeyValue, new CosmosItemRequestOptions(), cancellationToken);
         }
         
         private void InitialiseCosmosStore(string overridenCollectionName)
@@ -218,8 +215,8 @@ namespace Cosmonaut
             IsShared = typeof(TEntity).UsesSharedCollection();
             CollectionName = GetCosmosStoreCollectionName(overridenCollectionName);
 
-            Settings.DefaultCollectionThroughput = CollectionThrouput = CosmonautClient.GetOfferV2ForCollectionAsync(DatabaseName, CollectionName).ConfigureAwait(false).GetAwaiter()
-                .GetResult()?.Content?.OfferThroughput ?? typeof(TEntity).GetCollectionThroughputForEntity(Settings.DefaultCollectionThroughput);
+            Settings.DefaultCollectionThroughput = CollectionThrouput = CosmosClient.Databases[DatabaseName].Containers[CollectionName].ReadProvisionedThroughputAsync().ConfigureAwait(false).GetAwaiter()
+                .GetResult() ?? typeof(TEntity).GetCollectionThroughputForEntity(Settings.DefaultCollectionThroughput);
 
             _databaseCreator.EnsureCreatedAsync(DatabaseName).ConfigureAwait(false).GetAwaiter().GetResult();
             _collectionCreator.EnsureCreatedAsync<TEntity>(DatabaseName, CollectionName, CollectionThrouput, Settings.IndexingPolicy)
@@ -235,26 +232,17 @@ namespace Cosmonaut
         }
 
         private async Task<CosmosMultipleResponse<TEntity>> ExecuteMultiOperationAsync(IEnumerable<TEntity> entities,
-            Func<TEntity, Task<CosmosResponse<TEntity>>> operationFunc)
+            Func<TEntity, Task<CosmosItemResponse<TEntity>>> operationFunc)
         {
             var entitiesList = entities.ToList();
             if (!entitiesList.Any())
                 return new CosmosMultipleResponse<TEntity>();
-
-            try
-            {
-                var multipleResponse = await _cosmosScaler.UpscaleCollectionIfConfiguredAsSuch(entitiesList, DatabaseName, CollectionName, operationFunc);
-                var results = (await entitiesList.Select(operationFunc).WhenAllTasksAsync()).ToList();
-                multipleResponse.SuccessfulEntities.AddRange(results.Where(x => x.IsSuccess));
-                multipleResponse.FailedEntities.AddRange(results.Where(x => !x.IsSuccess));
-                await _cosmosScaler.DownscaleCollectionRequestUnitsToDefault(DatabaseName, CollectionName);
-                return multipleResponse;
-            }
-            catch (Exception)
-            {
-                await _cosmosScaler.DownscaleCollectionRequestUnitsToDefault(DatabaseName, CollectionName);
-                throw;
-            }
+            
+            var multipleResponse = new CosmosMultipleResponse<TEntity>();
+            var results = (await entitiesList.Select(operationFunc).WhenAllTasksAsync()).ToList();
+            multipleResponse.SuccessfulEntities.AddRange(results.Where(x => ((int)x.StatusCode >= 200) && ((int)x.StatusCode <= 299)));
+            multipleResponse.FailedEntities.AddRange(results.Where(x => !((int)x.StatusCode >= 200) && ((int)x.StatusCode <= 299)));
+            return multipleResponse;
         }
         
         private object GetPartitionKeyValue(string id)

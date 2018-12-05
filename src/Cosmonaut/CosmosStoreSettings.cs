@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Azure.Cosmos;
 using Newtonsoft.Json;
 
 namespace Cosmonaut
@@ -11,7 +12,7 @@ namespace Cosmonaut
 
         public Uri EndpointUrl { get; }
 
-        public ConnectionPolicy ConnectionPolicy { get; set; }
+        //public ConnectionPolicy ConnectionPolicy { get; set; }
 
         public ConsistencyLevel? ConsistencyLevel { get; set; } = null;
 
@@ -51,7 +52,7 @@ namespace Cosmonaut
             string databaseName,
             string endpointUrl,
             string authKey,
-            ConnectionPolicy connectionPolicy = null,
+            //ConnectionPolicy connectionPolicy = null,
             IndexingPolicy indexingPolicy = null,
             int defaultCollectionThroughput = CosmosConstants.MinimumCosmosThroughput,
             bool scaleCollectionRUsAutomatically = false,
@@ -59,7 +60,7 @@ namespace Cosmonaut
             : this(databaseName, 
                   new Uri(endpointUrl), 
                   authKey,
-                  connectionPolicy,
+                  //connectionPolicy,
                   indexingPolicy,
                   defaultCollectionThroughput,
                   scaleCollectionRUsAutomatically,
@@ -71,7 +72,7 @@ namespace Cosmonaut
             string databaseName, 
             Uri endpointUrl, 
             string authKey,
-            ConnectionPolicy connectionPolicy = null,
+            //ConnectionPolicy connectionPolicy = null,
             IndexingPolicy indexingPolicy = null,
             int defaultCollectionThroughput = CosmosConstants.MinimumCosmosThroughput,
             bool scaleCollectionRUsAutomatically = false,
@@ -80,7 +81,7 @@ namespace Cosmonaut
             DatabaseName = databaseName ?? throw new ArgumentNullException(nameof(databaseName));
             EndpointUrl = endpointUrl ?? throw new ArgumentNullException(nameof(endpointUrl));
             AuthKey = authKey ?? throw new ArgumentNullException(nameof(authKey));
-            ConnectionPolicy = connectionPolicy;
+            //ConnectionPolicy = connectionPolicy;
             DefaultCollectionThroughput = defaultCollectionThroughput;
             ScaleCollectionRUsAutomatically = scaleCollectionRUsAutomatically;
             MaximumUpscaleRequestUnits = maximumUpscaleRequestUnits;

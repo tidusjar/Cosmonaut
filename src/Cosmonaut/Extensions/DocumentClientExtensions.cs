@@ -2,11 +2,11 @@
 {
     public static class DocumentClientExtensions
     {
-        public static void SetupInfiniteRetries(this IDocumentClient documentClient)
-        {
-            if (documentClient.ConnectionPolicy == null)
-                return;
-            documentClient.ConnectionPolicy.RetryOptions.MaxRetryAttemptsOnThrottledRequests = int.MaxValue;
-        }
+        //public static void SetupInfiniteRetries(this IDocumentClient documentClient)
+        //{
+        //    if (documentClient.ConnectionPolicy == null)
+        //        return;
+        //    documentClient.ConnectionPolicy.RetryOptions.MaxRetryAttemptsOnThrottledRequests = int.MaxValue;
+        //}
     }
 }

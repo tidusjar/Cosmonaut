@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Azure.Cosmos;
 
 namespace Cosmonaut.Response
 {
@@ -7,16 +8,16 @@ namespace Cosmonaut.Response
     {
         public bool IsSuccess => !FailedEntities.Any();
 
-        public List<CosmonautResponse<TEntity>> FailedEntities { get; } = new List<CosmonautResponse<TEntity>>();
+        public List<CosmosItemResponse<TEntity>> FailedEntities { get; } = new List<CosmosItemResponse<TEntity>>();
 
-        public List<CosmonautResponse<TEntity>> SuccessfulEntities { get; } = new List<CosmonautResponse<TEntity>>();
+        public List<CosmosItemResponse<TEntity>> SuccessfulEntities { get; } = new List<CosmosItemResponse<TEntity>>();
 
-        internal void AddResponse(CosmonautResponse<TEntity> response)
+        internal void AddResponse(CosmosItemResponse<TEntity> response)
         {
             if (response == null)
                 return;
 
-            if (response.IsSuccess)
+            if (((int)response.StatusCode >= 200) && ((int)response.StatusCode <= 299))
             {
                 SuccessfulEntities.Add(response);
                 return;

@@ -6,24 +6,24 @@ namespace Cosmonaut.Extensions
 {
     public static class CosmonautHelpers
     {
-        public static Document ToCosmonautDocument<TEntity>(this TEntity obj) where TEntity : class
-        {
-            obj.ValidateEntityForCosmosDb();
-            var document = JsonConvert.DeserializeObject<dynamic>(JsonConvert.SerializeObject(obj));
+        //public static Document ToCosmonautDocument<TEntity>(this TEntity obj) where TEntity : class
+        //{
+        //    obj.ValidateEntityForCosmosDb();
+        //    var document = JsonConvert.DeserializeObject<dynamic>(JsonConvert.SerializeObject(obj));
 
-            using (JsonReader reader = new JTokenReader(document))
-            {
-                var actualDocument = new Document();
-                actualDocument.LoadFrom(reader);
-                actualDocument.Id = obj.GetDocumentId();
-                RemoveDuplicateIds(ref actualDocument);
+        //    using (JsonReader reader = new JTokenReader(document))
+        //    {
+        //        var actualDocument = new Document();
+        //        actualDocument.LoadFrom(reader);
+        //        actualDocument.Id = obj.GetDocumentId();
+        //        RemoveDuplicateIds(ref actualDocument);
 
-                if (typeof(TEntity).UsesSharedCollection())
-                    actualDocument.SetPropertyValue(nameof(ISharedCosmosEntity.CosmosEntityName), $"{typeof(TEntity).GetSharedCollectionEntityName()}");
+        //        if (typeof(TEntity).UsesSharedCollection())
+        //            actualDocument.SetPropertyValue(nameof(ISharedCosmosEntity.CosmosEntityName), $"{typeof(TEntity).GetSharedCollectionEntityName()}");
 
-                return actualDocument;
-            }
-        }
+        //        return actualDocument;
+        //    }
+        //}
 
         internal static PartitionKeyDefinition GetPartitionKeyDefinition(string partitionKeyName)
         {

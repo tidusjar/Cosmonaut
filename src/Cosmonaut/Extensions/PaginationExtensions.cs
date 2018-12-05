@@ -16,20 +16,20 @@ namespace Cosmonaut.Extensions
         /// Read more at https://github.com/Elfocrash/Cosmonaut
         /// </summary>
         /// <returns>A specific page of the results that your query matches.</returns>
-        public static CosmosResultSetIterator<T> WithPagination<T>(this CosmosResultSetIterator<T> queryable, int pageNumber, int pageSize)
-        {
-            if (pageNumber <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(pageNumber), "Page number must be a positive number.");
-            }
+        //public static CosmosResultSetIterator<T> WithPagination<T>(this CosmosResultSetIterator<T> queryable, int pageNumber, int pageSize)
+        //{
+        //    if (pageNumber <= 0)
+        //    {
+        //        throw new ArgumentOutOfRangeException(nameof(pageNumber), "Page number must be a positive number.");
+        //    }
 
-            if (pageSize <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size must be a positive number.");
-            }
+        //    if (pageSize <= 0)
+        //    {
+        //        throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size must be a positive number.");
+        //    }
 
-            return GetQueryableWithPaginationSettings(queryable, $"{nameof(WithPagination)}/{pageNumber}", pageSize);
-        }
+        //    return GetQueryableWithPaginationSettings(queryable, $"{nameof(WithPagination)}/{pageNumber}", pageSize);
+        //}
 
         /// <summary>
         /// Adds pagination for your CosmosDB query. This is an efficient and cheap form of pagination because it doesn't go 
@@ -59,8 +59,8 @@ namespace Cosmonaut.Extensions
                 return queryable;
 
             var feedOptions = queryable.GetFeedOptionsForQueryable() ?? new CosmosQueryRequestOptions();
-            feedOptions.MaxItemCount = pageSize;
-            feedOptions.RequestContinuation = continuationInfo;
+            //feedOptions.MaxItemCount = pageSize;
+           // feedOptions.RequestContinuation = continuationInfo;
             queryable.SetFeedOptionsForQueryable(feedOptions);
             return queryable;
         }

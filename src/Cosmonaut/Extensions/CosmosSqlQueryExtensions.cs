@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Cosmonaut.Exceptions;
 using Cosmonaut.Internal;
+using Microsoft.Azure.Cosmos;
 
 namespace Cosmonaut.Extensions
 {
@@ -45,22 +46,19 @@ namespace Cosmonaut.Extensions
             return GetQueryWithExistingWhereClauseInjectedWithSharedCollection(sql, identifier, cosmosEntityNameValue);
         }
 
-        internal static SqlParameterCollection ConvertToSqlParameterCollection(this object obj)
+        internal static CosmosSqlQueryDefinition AddQueryParametersFromObject(this CosmosSqlQueryDefinition query, object obj)
         {
-            var sqlParameterCollection = new SqlParameterCollection();
-
             if (obj == null)
-                return sqlParameterCollection;
+                return query;
 
             foreach (var propertyInfo in InternalTypeCache.Instance.GetPropertiesFromCache(obj.GetType()))
             {
                 var propertyName = propertyInfo.Name.StartsWith("@") ? propertyInfo.Name : $"@{propertyInfo.Name}";
                 var propertyValue = propertyInfo.GetValue(obj);
-                var sqlparameter = new SqlParameter(propertyName, propertyValue);
-                sqlParameterCollection.Add(sqlparameter);
+                query.UseParameter(propertyName, propertyValue);
             }
 
-            return sqlParameterCollection;
+            return query;
         }
 
         private static string GetQueryWithExistingWhereClauseInjectedWithSharedCollection(string sql,

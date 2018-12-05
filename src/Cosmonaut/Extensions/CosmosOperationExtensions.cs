@@ -5,81 +5,81 @@ namespace Cosmonaut.Extensions
 {
     internal static class CosmosOperationExtensions
     {
-        internal static async Task<TResult> ExecuteCosmosQuery<TResult>(this Task<ResourceResponse<TResult>> operationTask) where TResult : Resource, new()
-        {
-            try
-            {
-                var response = await operationTask;
-                return response?.Resource;
-            }
-            catch (DocumentClientException exception)
-            {
-                var cosmosResponse = exception.ToCosmosResponse<TResult>();
+        //internal static async Task<TResult> ExecuteCosmosQuery<TResult>(this Task<ResourceResponse<TResult>> operationTask) where TResult : Resource, new()
+        //{
+        //    try
+        //    {
+        //        var response = await operationTask;
+        //        return response?.Resource;
+        //    }
+        //    catch (DocumentClientException exception)
+        //    {
+        //        var cosmosResponse = exception.ToCosmosResponse<TResult>();
 
-                if (cosmosResponse.CosmosOperationStatus == CosmosOperationStatus.ResourceNotFound)
-                    return null;
+        //        if (cosmosResponse.CosmosOperationStatus == CosmosOperationStatus.ResourceNotFound)
+        //            return null;
 
-                throw;
-            }
-        }
+        //        throw;
+        //    }
+        //}
 
-        internal static async Task<TResult> ExecuteCosmosQuery<TResult>(this Task<DocumentResponse<TResult>> operationTask) where TResult : class
-        {
-            try
-            {
-                var response = await operationTask;
-                return response?.Document;
-            }
-            catch (DocumentClientException exception)
-            {
-                var cosmosResponse = exception.ToCosmosResponse<TResult>();
+        //internal static async Task<TResult> ExecuteCosmosQuery<TResult>(this Task<DocumentResponse<TResult>> operationTask) where TResult : class
+        //{
+        //    try
+        //    {
+        //        var response = await operationTask;
+        //        return response?.Document;
+        //    }
+        //    catch (DocumentClientException exception)
+        //    {
+        //        var cosmosResponse = exception.ToCosmosResponse<TResult>();
 
-                if (cosmosResponse.CosmosOperationStatus == CosmosOperationStatus.ResourceNotFound)
-                    return null;
+        //        if (cosmosResponse.CosmosOperationStatus == CosmosOperationStatus.ResourceNotFound)
+        //            return null;
 
-                throw;
-            }
-        }
+        //        throw;
+        //    }
+        //}
 
-        internal static async Task<ResourceResponse<TResult>> ExecuteCosmosCommand<TResult>(this Task<ResourceResponse<TResult>> operationTask) where TResult : Resource, new()
-        {
-            try
-            {
-                var response = await operationTask;
-                return response;
-            }
-            catch (DocumentClientException exception)
-            {
-                var cosmosResponse = exception.ToCosmosResponse<TResult>();
+        //internal static async Task<ResourceResponse<TResult>> ExecuteCosmosCommand<TResult>(this Task<ResourceResponse<TResult>> operationTask) where TResult : Resource, new()
+        //{
+        //    try
+        //    {
+        //        var response = await operationTask;
+        //        return response;
+        //    }
+        //    catch (DocumentClientException exception)
+        //    {
+        //        var cosmosResponse = exception.ToCosmosResponse<TResult>();
 
-                if (cosmosResponse.CosmosOperationStatus == CosmosOperationStatus.ResourceNotFound)
-                    return null;
+        //        if (cosmosResponse.CosmosOperationStatus == CosmosOperationStatus.ResourceNotFound)
+        //            return null;
 
-                throw;
-            }
-        }
+        //        throw;
+        //    }
+        //}
 
-        internal static async Task<CosmonautResponse<TEntity>> ExecuteCosmosCommand<TEntity>(this Task<ResourceResponse<Document>> operationTask, TEntity entity) where TEntity : class
-        {
-            try
-            {
-                var response = await operationTask;
-                return new CosmonautResponse<TEntity>(entity, response);
-            }
-            catch (DocumentClientException exception)
-            {
-                var cosmosResponse = exception.ToCosmosResponse(entity);
+        //internal static async Task<CosmonautResponse<TEntity>> ExecuteCosmosCommand<TEntity>(this Task<ResourceResponse<Document>> operationTask, TEntity entity) where TEntity : class
+        //{
+        //    try
+        //    {
+        //        var response = await operationTask;
+        //        return new CosmonautResponse<TEntity>(entity, response);
+        //    }
+        //    catch (DocumentClientException exception)
+        //    {
+        //        var cosmosResponse = exception.ToCosmosResponse(entity);
 
-                switch (cosmosResponse.CosmosOperationStatus)
-                {
-                    case CosmosOperationStatus.ResourceNotFound:
-                    case CosmosOperationStatus.PreconditionFailed:
-                    case CosmosOperationStatus.Conflict:
-                        return cosmosResponse;
-                    default:
-                        throw;
-                }
-            }
-        }
+        //        switch (cosmosResponse.CosmosOperationStatus)
+        //        {
+        //            case CosmosOperationStatus.ResourceNotFound:
+        //            case CosmosOperationStatus.PreconditionFailed:
+        //            case CosmosOperationStatus.Conflict:
+        //                return cosmosResponse;
+        //            default:
+        //                throw;
+        //        }
+        //    }
+        //}
     }
 }

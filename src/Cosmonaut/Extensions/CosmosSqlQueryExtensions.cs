@@ -89,6 +89,10 @@ namespace Cosmonaut.Extensions
             var secondPartQuery = splitQuery[1];
             var sharedCollectionExpressionQuery =
                 $"{identifier}.{nameof(ISharedCosmosEntity.CosmosEntityName)} = '{cosmosEntityNameValue}'";
+            if (splitQuery.Length == 3)
+            {
+                return $"{firstPartQuery} where {sharedCollectionExpressionQuery} and {secondPartQuery} where {splitQuery[2]}";
+            }
             return $"{firstPartQuery} where {sharedCollectionExpressionQuery} and {secondPartQuery}";
         }
 
